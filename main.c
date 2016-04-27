@@ -6,6 +6,10 @@ short dispatcher(char* apdu, char* responseBuf, u2* responseLen);
 void insertCard(u1* iccid, u1* imsi, u1* ki);
 void showFS();
 void printReponse(u1* resp, short len);
+u1* aidString2Buffertmp(u1* aid, u2* aidlen);
+u1 hexToDectmp(u1 c);
+
+#define MAX_LINE 1024
 
 int main() {
 	char* apdu = malloc(256);
@@ -13,6 +17,10 @@ int main() {
 	short index = 0;
 	FileDesc* mf;
 	unsigned short sw, resLen;
+	char buf[MAX_LINE];  /*缓冲区*/
+	FILE *fp;            /*文件指针*/
+	short len;             /*行字符个数*/ 
+	char *apdubuf;
 	
     printf("hello world\n");
 	//apdu[1] = 0xA4;
@@ -35,70 +43,26 @@ int main() {
 	
 	showFS();
 	
-	index = 0;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0xA4;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0x0C;
-	apdu[index ++] = 0x02;
-	apdu[index ++] = 0x2F;
-	apdu[index ++] = 0x05;
-	
-	sw = dispatcher(apdu, reponse, &resLen);
-	
-	printf("sw: %02X\n", sw);
-	if(resLen > 0) {
-		printReponse(reponse, resLen);
+	if((fp = fopen("apdu.txt","r")) == NULL)
+	{
+		perror("fail to read");
+		exit (1) ;
 	}
-	
-	
-	index = 0;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0xA4;
-	apdu[index ++] = 0x08;
-	apdu[index ++] = 0x04;
-	apdu[index ++] = 0x02;
-	apdu[index ++] = 0x2F;
-	apdu[index ++] = 0x05;
-	
-	sw = dispatcher(apdu, reponse, &resLen);
-	
-	printf("sw: %02X\n", sw);
-	if(resLen > 0) {
-		printReponse(reponse, resLen);
+	while(fgets(buf,MAX_LINE,fp) != NULL)
+	{
+		len = strlen(buf);
+		if(len < 5) {
+			continue;
+		}
+		//printf("%s\n",buf);
+		apdubuf = aidString2Buffertmp(buf, &len);
+		//printReponse(apdubuf, len - 1);
+		sw = dispatcher(apdubuf, reponse, &resLen);
+		printf("										[SW]: %02X\n", sw);
+		if(resLen > 0) {
+			printReponse(reponse, resLen);
+		}
 	}
-	
-	
-	index = 0;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0xA4;
-	apdu[index ++] = 0x04;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0x10;
-	apdu[index ++] = 0xA0;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0x00;
-	apdu[index ++] = 0x87;
-	apdu[index ++] = 0x10;
-	apdu[index ++] = 0x02;
-	apdu[index ++] = 0xFF;
-	apdu[index ++] = 0x86;
-	apdu[index ++] = 0xFF;
-	apdu[index ++] = 0xFF;
-	apdu[index ++] = 0x89;
-	apdu[index ++] = 0xFF;
-	apdu[index ++] = 0xFF;
-	apdu[index ++] = 0xFF;
-	apdu[index ++] = 0xFF;
-	
-	sw = dispatcher(apdu, reponse, &resLen);
-	
-	printf("sw: %02X\n", sw);
-	if(resLen > 0) {
-		printReponse(reponse, resLen);
-	}
-
 }
 
 void printReponse(u1* resp, short len) {
@@ -109,4 +73,35 @@ void printReponse(u1* resp, short len) {
 		printf("%02X",  *(resp + (i ++)));
 	}
 	printf(" $\n");
+}
+
+u1 hexToDectmp(u1 c) {
+	if ('0' <= c && c <= '9') {
+		return c - '0';
+	}
+	if ('A' <= c && c <= 'F') {
+		return c - 'A' + 10;
+	}
+	if ('a' <= c && c <= 'f') {
+		return c - 'a' + 10;
+	}
+	return -1;
+}
+
+u1* aidString2Buffertmp(u1* aid, u2* aidlen) {
+	u1* buf, left, right, i;
+	u1 strlength  = strlen(aid);
+	u1 buflen = strlength / 2;
+
+	//printf("aid[%s], len[%02X]\n", aid, buflen);
+	
+	buf = malloc(buflen);
+
+	for(i = 0; i < strlength; i += 2) {
+		left = hexToDectmp(*(aid + i));
+		right = hexToDectmp(*(aid + i + 1));
+		buf[i /2] = (left << 4) + right;
+	}
+	*aidlen = buflen;
+	return buf;
 }
