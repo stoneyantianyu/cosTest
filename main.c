@@ -3,7 +3,18 @@
 #include "inc.h"
 
 short dispatcher(char* apdu, char* responseBuf, u2* responseLen);
-void insertCard(u1* iccid, u1* imsi, u1* ki);
+extern void insertCard(	u1* imsi,
+						u1* ki,
+						u1* opc,
+						u1* iccid,
+						u1* acc,
+						u1* spn,
+						u1* apn,
+						u1* hplmn,
+						u1* ehplmn,
+						u1* loci,
+						u1* psloci,
+						u1* fplmn );
 void showFS();
 void printReponse(u1* resp, short len);
 u1* aidString2Buffertmp(u1* aid, u2* aidlen);
@@ -24,10 +35,20 @@ int main() {
 	
     printf("hello world\n");
 	//apdu[1] = 0xA4;
-	insertCard("8986201603250104", 
-		"234507095700575",
-		"3C77B0BBDF8BB39A94175A0D5C9DFE4E"
-		);
+	insertCard(
+				"234507095700575",//"460010300000001",//imsi,
+				"",//ki,
+				"",//opc,
+				"123456789",//iccid,
+				"0404",//acc,
+				"00hhhhhhh",//spn,
+				"",//apn,
+				"",//hplmn,
+				"",//ehplmn
+				"",//loci,
+				"",//psloci
+				""//fplmn
+				);
 	/*
 	dispatcher(apdu, reponse, &resLen);
 	apdu[1] = 0x70;
