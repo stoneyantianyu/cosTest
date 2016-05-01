@@ -19,6 +19,7 @@ void showFS();
 void printReponse(u1* resp, short len);
 u1* aidString2Buffertmp(u1* aid, u2* aidlen);
 u1 hexToDectmp(u1 c);
+void aesTest(u1* key, u1* input, u1* output);
 
 #define MAX_LINE 1024
 
@@ -34,17 +35,25 @@ int main() {
 	char *apdubuf;
 	
     printf("hello world\n");
+	u1 key[16];
+	u1 input[16];
+	u1 output[16];
+	memset(key, 1, 16);
+	memset(input, 1, 16);
+	aesTest(key, input, output);
+	
+	
 	//apdu[1] = 0xA4;
 	insertCard(
 				"234507095700575",//"460010300000001",//imsi,
-				"",//ki,
-				"",//opc,
+				"3C77B0BBDF8BB39A94175A0D5C9DFE4E",//ki,
+				"8264325391703F4EDAAC5C3B046776CB",//opc,
 				"123456789",//iccid,
 				"0404",//acc,
 				"00hhhhhhh",//spn,
 				"",//apn,
-				"",//hplmn,
-				"",//ehplmn
+				"23450",//hplmn,
+				"46001",//ehplmn
 				"",//loci,
 				"",//psloci
 				""//fplmn
@@ -62,7 +71,16 @@ int main() {
 	//mf = buildFileSystem();
 	//showFileSystem(mf);
 	
-	showFS();
+	//showFS();
+	
+	
+	
+	printReponse(key, 16);
+	printReponse(input, 16);
+	printReponse(output, 16);
+	
+	//return;
+	
 	
 	if((fp = fopen("apdu.txt","r")) == NULL)
 	{
