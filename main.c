@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "inc.h"
 
-short dispatcher(char* apdu, char* responseBuf, u2* responseLen);
+u2 dispatcher(u1* apdu, u2 apduLen, u1* responseBuf, u2* responseLen);
 extern void insertCard(	u1* imsi,
 						u1* ki,
 						u1* opc,
@@ -96,7 +96,8 @@ int main() {
 		//printf("%s\n",buf);
 		apdubuf = aidString2Buffertmp(buf, &len);
 		//printReponse(apdubuf, len - 1);
-		sw = dispatcher(apdubuf, reponse, &resLen);
+		//printf("apdu len: %d\n", len - 1);
+		sw = dispatcher(apdubuf, len - 1, reponse, &resLen);
 		printf("										[SW]: %02X\n", sw);
 		if(resLen > 0) {
 			printReponse(reponse, resLen);
